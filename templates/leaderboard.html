@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaderboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-black min-h-screen">
+    <div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded border-2">
+        <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 text-center text-black tracking-tight">Leaderboard</h1>
+    <div id="leaderboard-list" class="grid gap-4">
+            {% for q in questions %}
+                <div class="leaderboard-card relative bg-white rounded-lg shadow-md p-6 flex justify-between items-center transition-all duration-500" data-id="{{ q.id }}">
+                    <span class="block text-lg font-medium text-black">{{ q.question }}</span>
+                    <span class="ml-4 bg-green-500 text-white px-2 py-1 rounded inline-block font-bold" style="min-width: 90px; text-align: center;">Score: <span class="score">{{ q.score }}</span></span>
+
+                </div>
+            {% endfor %}
+        </div>
+        <a href="/questions" class="text-blue-500 hover:underline mt-4 inline-block">Questions</a>
+    <!-- No animation styles needed -->
+        <script>
+        // Just reorder and update scores, no animation
+        function voteLeaderboard(id, btn) {
+            fetch('/vote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            });
+        }
+        setInterval(() => {
+            fetch('/leaderboard-data')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('leaderboard-list');
+                    const cards = Array.from(list.children);
+                    const cardMap = {};
+                    cards.forEach(card => {
+                        cardMap[card.dataset.id] = card;
+                    });
+                    // Sort questions by score descending
+                    data.questions.sort((a, b) => b.score - a.score);
+                    data.questions.forEach(q => {
+                        const card = cardMap[q.id];
+                        if (card) {
+                            card.querySelector('.score').textContent = q.score;
+                            list.appendChild(card);
+                        }
+                    });
+                });
+        }, 2000);
+        </script>
+    </div>
+</body>
+</html>

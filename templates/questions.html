@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-black min-h-screen">
+    <div class="w-full max-w-xl mx-auto mt-4 sm:mt-10 px-2 sm:px-6 py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+        <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 text-center text-black tracking-tight">Questions</h1>
+        <div id="question-list" class="flex flex-col gap-3 sm:gap-4">
+            {% for q in questions %}
+                <div class="relative group bg-white rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition border border-gray-100 flex items-center justify-between">
+                    <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug">{{ q.question }}</span>
+                    <button onclick="vote({{ q.id }}, this.parentElement)" class="ml-4 px-5 py-2 bg-black text-white text-lg font-bold rounded border-2 border-green-500 hover:bg-green-700 hover:border-black transition">+1</button>
+                    <span class="plus-one hidden absolute left-1/2 top-2 text-green-500 text-2xl font-bold animate-plusone select-none">+1</span>
+                </div>
+            {% endfor %}
+        </div>
+        <style>
+        @keyframes plusone {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            60% { opacity: 1; transform: translateY(-30px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.1); }
+        }
+        .animate-plusone {
+            animation: plusone 0.8s ease-out;
+        }
+        </style>
+        <script>
+        function vote(id, card) {
+            fetch('/vote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Show +1 bubble
+                    const plusOne = card.querySelector('.plus-one');
+                    plusOne.classList.remove('hidden');
+                    plusOne.classList.add('animate-plusone');
+                    setTimeout(() => {
+                        plusOne.classList.add('hidden');
+                        plusOne.classList.remove('animate-plusone');
+                    }, 800);
+                }
+            });
+        }
+        </script>
+    <a href="/leaderboard" class="block w-full text-center text-blue-600 hover:underline mt-6 text-base font-semibold">Leaderboard</a>
+    </div>
+</body>
+</html>
