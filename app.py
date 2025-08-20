@@ -63,6 +63,15 @@ def vote():
     save_questions(questions)
     return jsonify({'success': True, 'score': next(q['score'] for q in questions if q['id'] == qid)})
 
+# Reset endpoint - resets all scores to 0
+@app.route('/reset', methods=['POST'])
+def reset():
+    questions = load_questions()
+    for q in questions:
+        q['score'] = 0
+    save_questions(questions)
+    return jsonify({'success': True, 'message': 'All scores reset to 0'})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
