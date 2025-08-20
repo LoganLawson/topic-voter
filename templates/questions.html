@@ -13,8 +13,8 @@
             {% for q in questions %}
                 <div class="relative group bg-white rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition border border-gray-100 flex items-center justify-between">
                     <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug">{{ q.question }}</span>
-                    <button onclick="vote({{ q.id }}, this.parentElement)" class="ml-4 px-5 py-2 bg-black text-white text-lg font-bold rounded border-2 border-green-500 hover:bg-green-700 hover:border-black transition">+1</button>
-                    <span class="plus-one hidden absolute left-1/2 top-2 text-green-500 text-2xl font-bold animate-plusone select-none">+1</span>
+                    <button onclick="vote({{ q.id }}, this.parentElement)" class="ml-4 px-5 py-2 bg-green-500 text-white text-lg font-bold rounded hover:bg-green-700 hover:border-black transition">+1</button>
+                    <span class="plus-one hidden absolute right-4 top-2 text-green-500 text-2xl font-bold animate-plusone select-none">+1</span>
                 </div>
             {% endfor %}
         </div>

@@ -2,30 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-black min-h-screen">
-    <div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded border-2">
-        <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 text-center text-black tracking-tight">Leaderboard</h1>
-    <div id="leaderboard-list" class="grid gap-4">
+    <div class="w-full max-w-xl mx-auto mt-4 sm:mt-10 px-2 sm:px-6 py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <a href="/questions" class="text-gray-500 hover:text-blue-500 text-sm font-normal">← Questions</a>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">Leaderboard</h1>
+            <div class="w-16"></div> <!-- Spacer to center the title -->
+        </div>
+    <div id="leaderboard-list" class="flex flex-col gap-3 sm:gap-4">
             {% for q in questions %}
-                <div class="leaderboard-card relative bg-white rounded-lg shadow-md p-6 flex justify-between items-center transition-all duration-500" data-id="{{ q.id }}">
-                    <span class="block text-lg font-medium text-black">{{ q.question }}</span>
-                    <span class="ml-4 bg-green-500 text-white px-2 py-1 rounded inline-block font-bold" style="min-width: 90px; text-align: center;">Score: <span class="score">{{ q.score }}</span></span>
-
+                <div class="leaderboard-card relative bg-white rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition border border-gray-100 flex items-center justify-between" data-id="{{ q.id }}">
+                    <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug flex-1 pr-3">{{ q.question }}</span>
+                    <span class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm sm:text-base font-bold flex-shrink-0">
+                        <span class="score">{{ q.score }}</span>
+                    </span>
                 </div>
             {% endfor %}
         </div>
         
         <!-- QR Code Section -->
-        <div class="mt-6 p-4 bg-gray-100 rounded-lg text-center">
-            <h2 class="text-lg font-bold mb-2 text-black">Scan to Vote</h2>
-            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-2" style="max-width: 200px;">
-            <p class="text-sm text-gray-600">Scan this QR code to access the questions page and vote</p>
+        <div class="mt-6 p-4 sm:p-6 bg-gray-100 rounded-xl text-center">
+            <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Scan to Vote</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-3 w-40 h-40 sm:w-48 sm:h-48">
+            <p class="text-sm sm:text-base text-gray-600">Scan this QR code to access the questions page and vote</p>
         </div>
         
-        <a href="/questions" class="text-blue-500 hover:underline mt-4 inline-block">Questions</a>
+        <div class="mt-4 text-center">
+            <a href="/questions" class="text-blue-500 hover:underline text-base sm:text-lg font-medium">← Back to Questions</a>
+        </div>
     <!-- No animation styles needed -->
         <script>
         // Just reorder and update scores, no animation
