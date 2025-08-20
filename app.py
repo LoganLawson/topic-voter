@@ -2,6 +2,9 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import json
 import os
+import qrcode
+import io
+import base64
 
 app = Flask(__name__)
 # API endpoint for live leaderboard data
@@ -16,7 +19,22 @@ def leaderboard_data():
 def leaderboard():
     questions = load_questions()
     questions_sorted = sorted(questions, key=lambda q: q['score'], reverse=True)
-    return render_template('leaderboard.html', questions=questions_sorted)
+    
+    # Generate QR code for questions page
+    # Use environment variable for production URL, fallback to request.url_root for local dev
+    base_url = os.getenv('PRODUCTION_URL', request.url_root.rstrip('/'))
+    questions_url = f"{base_url}/questions"
+    
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(questions_url)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return render_template('leaderboard.html', questions=questions_sorted, qr_code=qr_code_base64)
 def load_questions():
     with open(os.path.join(os.path.dirname(__file__), 'questions.json')) as f:
         return json.load(f)

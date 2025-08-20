@@ -17,6 +17,14 @@
                 </div>
             {% endfor %}
         </div>
+        
+        <!-- QR Code Section -->
+        <div class="mt-6 p-4 bg-gray-100 rounded-lg text-center">
+            <h2 class="text-lg font-bold mb-2 text-black">Scan to Vote</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-2" style="max-width: 200px;">
+            <p class="text-sm text-gray-600">Scan this QR code to access the questions page and vote</p>
+        </div>
+        
         <a href="/questions" class="text-blue-500 hover:underline mt-4 inline-block">Questions</a>
     <!-- No animation styles needed -->
         <script>
