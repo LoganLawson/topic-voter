@@ -8,7 +8,7 @@
 </head>
 <body class="bg-black min-h-screen">
     <!-- Desktop: side by side containers, Mobile: stacked containers -->
-    <div class="w-full max-w-xl lg:max-w-6xl mx-auto mt-4 sm:mt-10 px-2 sm:px-6 lg:flex lg:gap-6">
+    <div class="w-full max-w-xl lg:max-w-none lg:w-full mx-auto mt-4 sm:mt-10 px-2 sm:px-6 lg:px-8 lg:flex lg:gap-8">
         
         <!-- Main Leaderboard Container -->
         <div class="lg:flex-1 py-4 sm:py-6 bg-white rounded-lg shadow-lg">
@@ -33,7 +33,30 @@
         </div>
         
         <!-- Right Side Containers -->
-        <div class="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0 lg:space-y-6">
+        <div class="mt-6 lg:mt-0 lg:w-1/3 lg:flex-shrink-0 lg:space-y-6">
+            
+            <!-- Timer Container -->
+            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+                <div class="px-4 sm:px-6">
+                    <div class="p-4 sm:p-6 bg-blue-100 rounded-xl text-center">
+                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Session Timer</h2>
+                        <div id="timer-display" class="text-3xl sm:text-4xl font-mono font-bold text-blue-800 mb-2">00:00</div>
+                        <p class="text-sm sm:text-base text-gray-600">Time elapsed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Code Container -->
+            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+                <div class="px-4 sm:px-6">
+                    <div class="p-4 sm:p-6 bg-gray-100 rounded-xl text-center">
+                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Scan to Vote</h2>
+                        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-3 w-40 h-40 sm:w-48 sm:h-48 cursor-pointer hover:opacity-80 transition-opacity" onclick="expandQR()">
+                        <p class="text-sm sm:text-base text-gray-600">Scan this QR code to access the questions page and vote</p>
+                        <p class="text-xs text-gray-500 mt-1">Click to enlarge</p>
+                    </div>
+                </div>
+            </div>
             
             <!-- Photo Slideshow Container -->
             <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
@@ -56,54 +79,29 @@
                 </div>
             </div>
             
-            <!-- Timer Container -->
-            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
-                <div class="px-4 sm:px-6">
-                    <div class="p-4 sm:p-6 bg-blue-100 rounded-xl text-center">
-                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Session Timer</h2>
-                        <div id="timer-display" class="text-3xl sm:text-4xl font-mono font-bold text-blue-800 mb-2">00:00</div>
-                        <p class="text-sm sm:text-base text-gray-600">Time elapsed</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- QR Code Container -->
-            <div class="mt-6 lg:mt-0">
-                <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
-                    <div class="px-4 sm:px-6">
-                        <div class="p-4 sm:p-6 bg-gray-100 rounded-xl text-center">
-                            <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Scan to Vote</h2>
-                            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-3 w-40 h-40 sm:w-48 sm:h-48 cursor-pointer hover:opacity-80 transition-opacity" onclick="expandQR()">
-                            <p class="text-sm sm:text-base text-gray-600">Scan this QR code to access the questions page and vote</p>
-                            <p class="text-xs text-gray-500 mt-1">Click to enlarge</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
         </div>
         
     </div>
     
     <!-- Slideshow Full-Screen Modal -->
-    <div id="slideshow-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" onclick="closeSlideshow()">
-        <div class="bg-white rounded-lg p-4 sm:p-8 max-w-6xl max-h-screen mx-4 text-center relative overflow-hidden" onclick="event.stopPropagation()">
-            <h2 class="text-2xl font-bold mb-4 text-black">Slideshow</h2>
-            <div id="modal-slideshow-container" class="relative w-full h-[70vh] bg-gray-200 rounded-lg overflow-hidden mb-4">
+    <div id="slideshow-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden p-4" onclick="closeSlideshow()">
+        <div class="bg-white rounded-lg p-4 sm:p-6 text-center relative flex flex-col w-full max-w-4xl" style="height: 90vh;" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4 text-black flex-shrink-0">Slideshow</h2>
+            <div id="modal-slideshow-container" class="relative bg-gray-200 rounded-lg overflow-hidden mb-4 flex-1 flex items-center justify-center">
                 <div id="modal-slideshow-content" class="w-full h-full flex items-center justify-center">
                     <span class="text-gray-500">Loading...</span>
                 </div>
                 <!-- Navigation buttons -->
-                <button onclick="modalPrevSlide()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded hover:bg-opacity-75 transition">‹</button>
+                <button onclick="modalPrevSlide()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded hover:bg-opacity-75 transition z-10">‹</button>
                 <button onclick="modalNextSlide()" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded hover:bg-opacity-75 transition">›</button>
                 <!-- Navigation dots -->
                 <div id="modal-slideshow-dots" class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2"></div>
             </div>
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
                 <span id="modal-slide-counter" class="text-gray-600">1 / 1</span>
                 <button id="modal-play-pause-btn" onclick="modalTogglePlayPause()" class="px-4 py-2 bg-gray-300 rounded text-black hover:bg-gray-400 transition">⏸️</button>
             </div>
-            <button onclick="closeSlideshow()" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">Close</button>
+            <button onclick="closeSlideshow()" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition flex-shrink-0">Close</button>
         </div>
     </div>
     
@@ -206,14 +204,14 @@
             
             if (isVideo) {
                 container.innerHTML = `
-                    <video class="w-full h-full object-contain rounded" autoplay muted loop>
+                    <video class="w-full h-full object-contain" autoplay muted loop>
                         <source src="/static/slideshow/${file}" type="video/${file.split('.').pop()}">
                         Your browser does not support video playback.
                     </video>
                 `;
             } else {
                 container.innerHTML = `
-                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-contain rounded">
+                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-contain">
                 `;
             }
         }
@@ -350,14 +348,14 @@
             
             if (isVideo) {
                 container.innerHTML = `
-                    <video class="w-full h-full object-cover rounded" autoplay muted loop>
+                    <video class="w-full h-full object-contain rounded" autoplay muted loop>
                         <source src="/static/slideshow/${file}" type="video/${file.split('.').pop()}">
                         Your browser does not support video playback.
                     </video>
                 `;
             } else {
                 container.innerHTML = `
-                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-cover rounded">
+                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-contain rounded">
                 `;
             }
         }
