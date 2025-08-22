@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .leaderboard-card {
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+    </style>
 </head>
 <body class="bg-black min-h-screen">
     <!-- Desktop: side by side containers, Mobile: stacked containers -->
@@ -21,12 +26,14 @@
                 
                 <div id="leaderboard-list" class="flex flex-col gap-3 sm:gap-4">
                     {% for q in questions %}
-                        <div class="leaderboard-card relative bg-white rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition border border-gray-100 flex items-center justify-between" data-id="{{ q.id }}">
+                        {% if not q.get('hidden', False) %}
+                        <div class="leaderboard-card relative bg-white hover:bg-green-50 hover:border-green-300 rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition-all duration-200 border border-gray-100 flex items-center justify-between cursor-pointer" data-id="{{ q.id }}" onclick="hideQuestion('{{ q.id }}')">
                             <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug flex-1 pr-3">{{ q.question }}</span>
                             <span class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm sm:text-base font-bold flex-shrink-0">
                                 <span class="score">{{ q.score }}</span>
                             </span>
                         </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -404,6 +411,34 @@
         
         // Load slideshow on page load
         loadSlideshowFiles();
+        
+        // Hide question function
+        function hideQuestion(questionId) {
+            console.log('Hiding question:', questionId);
+            fetch('/hide-question', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: questionId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Hide response:', data);
+                if (data.success) {
+                    // Remove the question card from the DOM with animation
+                    const card = document.querySelector(`[data-id="${questionId}"]`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(-100%)';
+                        setTimeout(() => {
+                            card.remove();
+                        }, 300);
+                    }
+                } else {
+                    console.error('Failed to hide question:', data.error);
+                }
+            })
+            .catch(error => console.error('Error hiding question:', error));
+        }
         
         // Just reorder and update scores, no animation
         function voteLeaderboard(id, btn) {

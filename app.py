@@ -42,7 +42,9 @@ def slideshow_files():
 @app.route('/leaderboard-data')
 def leaderboard_data():
     questions = load_questions()
-    questions_sorted = sorted(questions, key=lambda q: q['score'], reverse=True)
+    # Filter out hidden questions
+    visible_questions = [q for q in questions if not q.get('hidden', False)]
+    questions_sorted = sorted(visible_questions, key=lambda q: q['score'], reverse=True)
     return jsonify({'questions': questions_sorted})
 
 # Leaderboard page
@@ -77,8 +79,9 @@ def save_questions(questions):
 @app.route('/questions')
 def questions():
     questions = load_questions()
-    # Sort by score descending, then by id for stable order
-    questions_sorted = sorted(questions, key=lambda q: (-q['score'], q['id']))
+    # Filter out hidden questions and sort by score descending, then by id for stable order
+    visible_questions = [q for q in questions if not q.get('hidden', False)]
+    questions_sorted = sorted(visible_questions, key=lambda q: (-q['score'], q['id']))
     return render_template('questions.html', questions=questions_sorted)
 
 # Voting endpoint
@@ -94,14 +97,40 @@ def vote():
     save_questions(questions)
     return jsonify({'success': True, 'score': next(q['score'] for q in questions if q['id'] == qid)})
 
-# Reset endpoint - resets all scores to 0
+# Hide question endpoint
+@app.route('/hide-question', methods=['POST'])
+def hide_question():
+    data = request.get_json()
+    print(f"Received hide request: {data}")  # Debug log
+    qid = data.get('id')
+    questions = load_questions()
+    
+    # Convert qid to int if it's a string
+    try:
+        qid = int(qid)
+    except (ValueError, TypeError):
+        print(f"Invalid question ID: {qid}")  # Debug log
+        return jsonify({'success': False, 'error': 'Invalid question ID'})
+    
+    for q in questions:
+        if q['id'] == qid:
+            q['hidden'] = True
+            save_questions(questions)
+            print(f"Successfully hid question {qid}")  # Debug log
+            return jsonify({'success': True, 'message': 'Question hidden'})
+    
+    print(f"Question {qid} not found")  # Debug log
+    return jsonify({'success': False, 'error': 'Question not found'})
+
+# Reset endpoint - resets all scores to 0 and shows all hidden questions
 @app.route('/reset', methods=['POST'])
 def reset():
     questions = load_questions()
     for q in questions:
         q['score'] = 0
+        q['hidden'] = False  # Show all hidden questions
     save_questions(questions)
-    return jsonify({'success': True, 'message': 'All scores reset to 0'})
+    return jsonify({'success': True, 'message': 'All scores reset to 0 and hidden questions restored'})
 
 
 if __name__ == '__main__':
