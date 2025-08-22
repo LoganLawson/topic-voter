@@ -383,14 +383,14 @@
             
             if (isVideo) {
                 container.innerHTML = `
-                    <video class="w-full h-full object-contain rounded" autoplay muted loop>
+                    <video class="w-full h-full object-cover rounded" autoplay muted loop>
                         <source src="/static/slideshow/${file}" type="video/${file.split('.').pop()}">
                         Your browser does not support video playback.
                     </video>
                 `;
             } else {
                 container.innerHTML = `
-                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-contain rounded">
+                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-cover rounded">
                 `;
             }
         }
