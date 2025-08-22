@@ -8,6 +8,34 @@
     <style>
         .leaderboard-card {
             transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-content {
+            transition: transform 0.3s ease-out;
+            width: 100%;
+        }
+        
+        .card-content.slid-left {
+            transform: translateX(-80px);
+        }
+        
+        .done-button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            pointer-events: none;
+            border-radius: 0 12px 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -27,11 +55,16 @@
                 <div id="leaderboard-list" class="flex flex-col gap-3 sm:gap-4">
                     {% for q in questions %}
                         {% if not q.get('hidden', False) %}
-                        <div class="leaderboard-card relative bg-white hover:bg-green-50 hover:border-green-300 rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition-all duration-200 border border-gray-100 flex items-center justify-between cursor-pointer" data-id="{{ q.id }}" onclick="hideQuestion('{{ q.id }}')">
-                            <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug flex-1 pr-3">{{ q.question }}</span>
-                            <span class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm sm:text-base font-bold flex-shrink-0">
-                                <span class="score">{{ q.score }}</span>
-                            </span>
+                        <div class="leaderboard-card relative bg-white hover:bg-green-50 hover:border-green-300 rounded-xl shadow-md px-4 py-5 sm:px-6 sm:py-6 transition-all duration-200 border border-gray-100 cursor-pointer" data-id="{{ q.id }}" onclick="slideQuestion('{{ q.id }}')">
+                            <div class="card-content flex items-center justify-between">
+                                <span class="block text-base sm:text-lg font-medium text-gray-800 leading-snug flex-1 pr-3">{{ q.question }}</span>
+                                <span class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm sm:text-base font-bold flex-shrink-0">
+                                    <span class="score">{{ q.score }}</span>
+                                </span>
+                            </div>
+                            <button class="done-button bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors" onclick="event.stopPropagation(); confirmHideQuestion('{{ q.id }}')">
+                                Done
+                            </button>
                         </div>
                         {% endif %}
                     {% endfor %}
@@ -441,6 +474,30 @@
         loadSlideshowFiles();
         
         // Hide question function
+        function slideQuestion(questionId) {
+            const card = document.querySelector(`[data-id="${questionId}"]`);
+            const cardContent = card.querySelector('.card-content');
+            const doneButton = card.querySelector('.done-button');
+            
+            if (!cardContent.classList.contains('slid-left')) {
+                // Slide left and show done button
+                cardContent.classList.add('slid-left');
+                doneButton.style.opacity = '1';
+                doneButton.style.visibility = 'visible';
+                doneButton.style.pointerEvents = 'auto';
+            } else {
+                // Slide back and hide done button
+                cardContent.classList.remove('slid-left');
+                doneButton.style.opacity = '0';
+                doneButton.style.visibility = 'hidden';
+                doneButton.style.pointerEvents = 'none';
+            }
+        }
+
+        function confirmHideQuestion(questionId) {
+            hideQuestion(questionId);
+        }
+
         function hideQuestion(questionId) {
             console.log('Hiding question:', questionId);
             fetch('/hide-question', {

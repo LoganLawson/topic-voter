@@ -51,7 +51,7 @@
         "id": 9,
         "question": "What is something I am deeply into that surprises people?",
         "score": 0,
-        "hidden": true
+        "hidden": false
     },
     {
         "id": 10,
