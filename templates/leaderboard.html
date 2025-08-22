@@ -32,19 +32,46 @@
             </div>
         </div>
         
-        <!-- QR Code Container -->
-        <div class="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0">
-            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg lg:sticky lg:top-4">
+        <!-- Right Side Containers -->
+        <div class="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0 lg:space-y-6">
+            
+            <!-- Timer Container -->
+            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
                 <div class="px-4 sm:px-6">
-                    <div class="p-4 sm:p-6 bg-gray-100 rounded-xl text-center">
-                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Scan to Vote</h2>
-                        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-3 w-40 h-40 sm:w-48 sm:h-48">
-                        <p class="text-sm sm:text-base text-gray-600">Scan this QR code to access the questions page and vote</p>
+                    <div class="p-4 sm:p-6 bg-blue-100 rounded-xl text-center">
+                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Session Timer</h2>
+                        <div id="timer-display" class="text-3xl sm:text-4xl font-mono font-bold text-blue-800 mb-2">00:00</div>
+                        <p class="text-sm sm:text-base text-gray-600">Time elapsed</p>
                     </div>
                 </div>
             </div>
+            
+            <!-- QR Code Container -->
+            <div class="mt-6 lg:mt-0">
+                <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+                    <div class="px-4 sm:px-6">
+                        <div class="p-4 sm:p-6 bg-gray-100 rounded-xl text-center">
+                            <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Scan to Vote</h2>
+                            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-3 w-40 h-40 sm:w-48 sm:h-48 cursor-pointer hover:opacity-80 transition-opacity" onclick="expandQR()">
+                            <p class="text-sm sm:text-base text-gray-600">Scan this QR code to access the questions page and vote</p>
+                            <p class="text-xs text-gray-500 mt-1">Click to enlarge</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
         
+    </div>
+    
+    <!-- QR Code Full-Screen Modal -->
+    <div id="qr-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" onclick="closeQR()">
+        <div class="bg-white rounded-lg p-8 max-w-lg mx-4 text-center" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4 text-black">Scan to Vote</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code for Questions Page" class="mx-auto mb-4 w-80 h-80">
+            <p class="text-gray-600 mb-4">Scan this QR code to access the questions page and vote</p>
+            <button onclick="closeQR()" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">Close</button>
+        </div>
     </div>
         
         <div class="mt-4 text-center">
@@ -52,6 +79,39 @@
         </div>
     <!-- No animation styles needed -->
         <script>
+        // Timer functionality
+        let startTime = Date.now();
+        
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timer-display').textContent = display;
+        }
+        
+        // Update timer every second
+        setInterval(updateTimer, 1000);
+        updateTimer(); // Initial call
+        
+        // QR Code Modal Functions
+        function expandQR() {
+            document.getElementById('qr-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeQR() {
+            document.getElementById('qr-modal').classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeQR();
+            }
+        });
+        
         // Just reorder and update scores, no animation
         function voteLeaderboard(id, btn) {
             fetch('/vote', {
