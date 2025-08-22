@@ -1,12 +1,43 @@
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 import json
 import os
 import qrcode
 import io
 import base64
+import glob
 
 app = Flask(__name__)
+
+# Get slideshow media files
+def get_slideshow_files():
+    media_folder = os.path.join(os.path.dirname(__file__), 'static', 'slideshow')
+    if not os.path.exists(media_folder):
+        return []
+    
+    # Supported image and video formats
+    image_exts = ['*.jpg', '*.jpeg', '*.png', '*.gif', '*.webp']
+    video_exts = ['*.mp4', '*.webm', '*.mov', '*.avi']
+    
+    files = []
+    for ext in image_exts + video_exts:
+        files.extend(glob.glob(os.path.join(media_folder, ext)))
+        files.extend(glob.glob(os.path.join(media_folder, ext.upper())))
+    
+    # Return relative paths for web serving
+    return [os.path.basename(f) for f in sorted(files)]
+
+# Serve slideshow media files
+@app.route('/static/slideshow/<filename>')
+def slideshow_media(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), 'static', 'slideshow'), filename)
+
+# API endpoint for slideshow files
+@app.route('/slideshow-files')
+def slideshow_files():
+    files = get_slideshow_files()
+    return jsonify({'files': files})
+
 # API endpoint for live leaderboard data
 @app.route('/leaderboard-data')
 def leaderboard_data():

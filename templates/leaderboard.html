@@ -35,6 +35,27 @@
         <!-- Right Side Containers -->
         <div class="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0 lg:space-y-6">
             
+            <!-- Photo Slideshow Container -->
+            <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
+                <div class="px-4 sm:px-6">
+                    <div class="p-4 sm:p-6 bg-gray-50 rounded-xl text-center relative overflow-hidden">
+                        <h2 class="text-lg sm:text-xl font-bold mb-3 text-black">Slideshow</h2>
+                        <div id="slideshow-container" class="relative w-full h-48 sm:h-56 bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onclick="expandSlideshow()">
+                            <div id="slideshow-content" class="w-full h-full flex items-center justify-center">
+                                <span class="text-gray-500">Loading media...</span>
+                            </div>
+                            <!-- Navigation dots -->
+                            <div id="slideshow-dots" class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2"></div>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center text-xs text-gray-500">
+                            <span id="slide-counter">1 / 1</span>
+                            <button id="play-pause-btn" onclick="togglePlayPause()" class="px-2 py-1 bg-gray-300 rounded text-black hover:bg-gray-400 transition">⏸️</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Click to enlarge</p>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Timer Container -->
             <div class="py-4 sm:py-6 bg-white rounded-lg shadow-lg">
                 <div class="px-4 sm:px-6">
@@ -62,6 +83,28 @@
             
         </div>
         
+    </div>
+    
+    <!-- Slideshow Full-Screen Modal -->
+    <div id="slideshow-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" onclick="closeSlideshow()">
+        <div class="bg-white rounded-lg p-4 sm:p-8 max-w-6xl max-h-screen mx-4 text-center relative overflow-hidden" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4 text-black">Slideshow</h2>
+            <div id="modal-slideshow-container" class="relative w-full h-[70vh] bg-gray-200 rounded-lg overflow-hidden mb-4">
+                <div id="modal-slideshow-content" class="w-full h-full flex items-center justify-center">
+                    <span class="text-gray-500">Loading...</span>
+                </div>
+                <!-- Navigation buttons -->
+                <button onclick="modalPrevSlide()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded hover:bg-opacity-75 transition">‹</button>
+                <button onclick="modalNextSlide()" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded hover:bg-opacity-75 transition">›</button>
+                <!-- Navigation dots -->
+                <div id="modal-slideshow-dots" class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2"></div>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+                <span id="modal-slide-counter" class="text-gray-600">1 / 1</span>
+                <button id="modal-play-pause-btn" onclick="modalTogglePlayPause()" class="px-4 py-2 bg-gray-300 rounded text-black hover:bg-gray-400 transition">⏸️</button>
+            </div>
+            <button onclick="closeSlideshow()" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">Close</button>
+        </div>
     </div>
     
     <!-- QR Code Full-Screen Modal -->
@@ -105,12 +148,264 @@
             document.body.style.overflow = ''; // Restore scrolling
         }
         
-        // Close modal with Escape key
+        // Slideshow Modal Functions
+        let modalSlideshowIsPlaying = true;
+        let modalSlideshowInterval;
+        
+        function expandSlideshow() {
+            document.getElementById('slideshow-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            initializeModalSlideshow();
+        }
+        
+        function closeSlideshow() {
+            document.getElementById('slideshow-modal').classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling
+            stopModalSlideshow();
+        }
+        
+        function initializeModalSlideshow() {
+            if (slideshowFiles.length > 0) {
+                createModalDots();
+                showModalSlide(currentSlideIndex);
+                startModalSlideshow();
+            }
+        }
+        
+        function createModalDots() {
+            const dotsContainer = document.getElementById('modal-slideshow-dots');
+            dotsContainer.innerHTML = '';
+            slideshowFiles.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'w-3 h-3 rounded-full bg-gray-400 cursor-pointer transition-colors';
+                dot.onclick = () => goToModalSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+        
+        function showModalSlide(index) {
+            if (slideshowFiles.length === 0) return;
+            
+            const file = slideshowFiles[index];
+            const container = document.getElementById('modal-slideshow-content');
+            const counter = document.getElementById('modal-slide-counter');
+            
+            // Update counter
+            counter.textContent = `${index + 1} / ${slideshowFiles.length}`;
+            
+            // Update dots
+            const dots = document.querySelectorAll('#modal-slideshow-dots > div');
+            dots.forEach((dot, i) => {
+                dot.className = i === index 
+                    ? 'w-3 h-3 rounded-full bg-blue-500 cursor-pointer transition-colors'
+                    : 'w-3 h-3 rounded-full bg-gray-400 cursor-pointer transition-colors';
+            });
+            
+            // Determine if file is video or image
+            const isVideo = /\.(mp4|webm|mov|avi)$/i.test(file);
+            
+            if (isVideo) {
+                container.innerHTML = `
+                    <video class="w-full h-full object-contain rounded" autoplay muted loop>
+                        <source src="/static/slideshow/${file}" type="video/${file.split('.').pop()}">
+                        Your browser does not support video playback.
+                    </video>
+                `;
+            } else {
+                container.innerHTML = `
+                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-contain rounded">
+                `;
+            }
+        }
+        
+        function modalNextSlide() {
+            const nextIndex = (currentSlideIndex + 1) % slideshowFiles.length;
+            currentSlideIndex = nextIndex;
+            showModalSlide(nextIndex);
+            showSlide(nextIndex); // Update main slideshow too
+            if (modalSlideshowIsPlaying) {
+                restartModalSlideshow();
+            }
+        }
+        
+        function modalPrevSlide() {
+            const prevIndex = (currentSlideIndex - 1 + slideshowFiles.length) % slideshowFiles.length;
+            currentSlideIndex = prevIndex;
+            showModalSlide(prevIndex);
+            showSlide(prevIndex); // Update main slideshow too
+            if (modalSlideshowIsPlaying) {
+                restartModalSlideshow();
+            }
+        }
+        
+        function goToModalSlide(index) {
+            currentSlideIndex = index;
+            showModalSlide(index);
+            showSlide(index); // Update main slideshow too
+            if (modalSlideshowIsPlaying) {
+                restartModalSlideshow();
+            }
+        }
+        
+        function startModalSlideshow() {
+            if (slideshowFiles.length <= 1) return;
+            modalSlideshowInterval = setInterval(modalNextSlide, 5000); // 5 seconds
+        }
+        
+        function stopModalSlideshow() {
+            if (modalSlideshowInterval) {
+                clearInterval(modalSlideshowInterval);
+                modalSlideshowInterval = null;
+            }
+        }
+        
+        function restartModalSlideshow() {
+            stopModalSlideshow();
+            startModalSlideshow();
+        }
+        
+        function modalTogglePlayPause() {
+            const btn = document.getElementById('modal-play-pause-btn');
+            if (modalSlideshowIsPlaying) {
+                stopModalSlideshow();
+                btn.textContent = '▶️';
+                modalSlideshowIsPlaying = false;
+            } else {
+                startModalSlideshow();
+                btn.textContent = '⏸️';
+                modalSlideshowIsPlaying = true;
+            }
+        }
+        
+        // Close modals with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeQR();
+                closeSlideshow();
             }
         });
+        
+        // Slideshow functionality
+        let slideshowFiles = [];
+        let currentSlideIndex = 0;
+        let slideshowInterval;
+        let isPlaying = true;
+        
+        // Load slideshow files from server
+        function loadSlideshowFiles() {
+            fetch('/slideshow-files')
+                .then(res => res.json())
+                .then(data => {
+                    slideshowFiles = data.files;
+                    if (slideshowFiles.length > 0) {
+                        initializeSlideshow();
+                    } else {
+                        document.getElementById('slideshow-content').innerHTML = '<span class="text-gray-500">No media files found</span>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading slideshow files:', err);
+                    document.getElementById('slideshow-content').innerHTML = '<span class="text-gray-500">Error loading media</span>';
+                });
+        }
+        
+        function initializeSlideshow() {
+            createDots();
+            showSlide(0);
+            startSlideshow();
+        }
+        
+        function createDots() {
+            const dotsContainer = document.getElementById('slideshow-dots');
+            dotsContainer.innerHTML = '';
+            slideshowFiles.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'w-2 h-2 rounded-full bg-gray-400 cursor-pointer transition-colors';
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+        
+        function showSlide(index) {
+            if (slideshowFiles.length === 0) return;
+            
+            currentSlideIndex = index;
+            const file = slideshowFiles[index];
+            const container = document.getElementById('slideshow-content');
+            const counter = document.getElementById('slide-counter');
+            
+            // Update counter
+            counter.textContent = `${index + 1} / ${slideshowFiles.length}`;
+            
+            // Update dots
+            const dots = document.querySelectorAll('#slideshow-dots > div');
+            dots.forEach((dot, i) => {
+                dot.className = i === index 
+                    ? 'w-2 h-2 rounded-full bg-blue-500 cursor-pointer transition-colors'
+                    : 'w-2 h-2 rounded-full bg-gray-400 cursor-pointer transition-colors';
+            });
+            
+            // Determine if file is video or image
+            const isVideo = /\.(mp4|webm|mov|avi)$/i.test(file);
+            
+            if (isVideo) {
+                container.innerHTML = `
+                    <video class="w-full h-full object-cover rounded" autoplay muted loop>
+                        <source src="/static/slideshow/${file}" type="video/${file.split('.').pop()}">
+                        Your browser does not support video playback.
+                    </video>
+                `;
+            } else {
+                container.innerHTML = `
+                    <img src="/static/slideshow/${file}" alt="Slide ${index + 1}" class="w-full h-full object-cover rounded">
+                `;
+            }
+        }
+        
+        function nextSlide() {
+            const nextIndex = (currentSlideIndex + 1) % slideshowFiles.length;
+            showSlide(nextIndex);
+        }
+        
+        function goToSlide(index) {
+            showSlide(index);
+            if (isPlaying) {
+                restartSlideshow();
+            }
+        }
+        
+        function startSlideshow() {
+            if (slideshowFiles.length <= 1) return;
+            slideshowInterval = setInterval(nextSlide, 5000); // 5 seconds
+        }
+        
+        function stopSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+        }
+        
+        function restartSlideshow() {
+            stopSlideshow();
+            startSlideshow();
+        }
+        
+        function togglePlayPause() {
+            const btn = document.getElementById('play-pause-btn');
+            if (isPlaying) {
+                stopSlideshow();
+                btn.textContent = '▶️';
+                isPlaying = false;
+            } else {
+                startSlideshow();
+                btn.textContent = '⏸️';
+                isPlaying = true;
+            }
+        }
+        
+        // Load slideshow on page load
+        loadSlideshowFiles();
         
         // Just reorder and update scores, no animation
         function voteLeaderboard(id, btn) {

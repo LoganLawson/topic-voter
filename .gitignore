@@ -36,3 +36,8 @@ build/
 
 # Other
 *.sqlite3
+
+answers.md
+
+static/slideshow/*
+!static/slideshow/.gitkeep
